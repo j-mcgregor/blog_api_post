@@ -1,36 +1,35 @@
-import faker from "faker";
-import mongoose from "mongoose";
-import assert from "assert";
-import MongoClient from "mongodb";
-import config from "../config";
-import Post from "../src/models/Post";
+/* eslint-disable no-console */
+import faker from 'faker';
+import mongoose from 'mongoose';
+import assert from 'assert';
+import MongoClient from 'mongodb';
+import Post from '../src/models/Post';
+import { mongoURL, mongoOptions } from '../src/lib/mongoHelper';
 
-// MONGOOSE FOR POSTS
-mongoose.Promise = require("bluebird");
-mongoose.connect(config.db, { useNewUrlParser: true });
+mongoose.Promise = require('bluebird');
+mongoose.connect(mongoURL, mongoOptions);
 
 Post.collection.drop();
 
 const seedPost = async () => {
   const posts = [];
 
-  // ===================================
   try {
-    MongoClient.connect("mongodb://localhost:27017", async (err, client) => {
+    MongoClient.connect(mongoUrl, mongoOptions, async (err, client) => {
       assert.equal(null, err);
-      const db = client.db("api_auth");
-      console.log("Connected successfully to server");
+      const db = client.db(mongoDb);
+      console.log('Connected successfully to server');
 
       const myPromise = () => {
         return new Promise((res, rej) => {
-          db.collection("users")
+          db.collection('users')
             .find()
             .toArray((err, data) => (err ? rej(err) : res(data)));
         });
       };
 
       const users = await myPromise();
-      console.log(users);
+      // console.log(users);
 
       for (let i = 0; i < users.length; i++) {
         const postsNumber = Math.floor(Math.random() * 20);
@@ -93,7 +92,7 @@ const seedPost = async () => {
 };
 
 async function init() {
-  console.log("Seeding posts...");
+  console.log('Seeding posts...');
   await seedPost();
 }
 
