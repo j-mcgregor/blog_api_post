@@ -16,6 +16,12 @@ export const resolvers = {
       const user = await Post.findOne({ _id: args.id });
 
       return user;
+    },
+    getPostsByUserId: async (_, args) => {
+      // temporary measure until stictching implemented
+      const user = await Post.find({ user: args.userId });
+
+      return user;
     }
   },
   Mutation: {
