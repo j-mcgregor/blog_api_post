@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
-import config from "../../../config";
-import Post from "../../models/Post";
+import mongoose from 'mongoose';
+import Post from '../../models/Post';
+import { mongoURL, mongoOptions } from '../../lib/mongoHelper';
 
-mongoose.Promise = require("bluebird");
-mongoose.connect(config.db, { useNewUrlParser: true });
+mongoose.Promise = require('bluebird');
+mongoose.connect(mongoURL, mongoOptions);
 
 export const resolvers = {
   Query: {

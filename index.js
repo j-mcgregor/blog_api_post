@@ -1,47 +1,49 @@
-import express from "express";
-import { ApolloServer } from "apollo-server-express";
-import mongoose from "mongoose";
-import logger from "morgan";
-import cors from "cors";
-import helmet from "helmet";
-import cookieParser from "cookie-parser";
-import bodyParser from "body-parser";
-import session from "express-session";
-import config from "./config";
-import schema from "./src/schema";
-import authMiddleware from "./src/lib/authMiddleware";
+/* eslint-disable no-console */
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import mongoose from 'mongoose';
+import logger from 'morgan';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import session from 'express-session';
+import config from './config';
+import schema from './src/schema';
+// import authMiddleware from "./src/lib/authMiddleware";
+import { mongoURL, mongoOptions } from './src/lib/mongoHelper';
 
-const { port, db, sessionSecret } = config;
+const { port, sessionSecret } = config;
 const { typeDefs, resolvers } = schema;
 
 const app = express();
-app.use(logger("dev"));
+app.use(logger('dev'));
 
 const mdb = async () => {
   try {
-    await mongoose.connect(db, { useNewUrlParser: true });
-    console.log("MongoDB connected");
+    await mongoose.connect(mongoURL, mongoOptions);
+    console.log('MongoDB connected');
   } catch (error) {
-    console.error("MongoDB error: ", error);
+    console.error('MongoDB error: ', error);
   }
 };
 
 mdb();
 
 app.use(helmet());
-console.log("Middleware added: helmet");
+console.log('Middleware added: helmet');
 app.use(cookieParser());
-console.log("Middleware added: cookie-parser");
+console.log('Middleware added: cookie-parser');
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: 'http://localhost:3000',
   credentials: true,
-  methods: "GET,PUT,POST,DELETE,OPTIONS",
-  headers: "Origin,X-Requested-With,Content-Type,Accept,application/json"
+  methods: 'GET,PUT,POST,DELETE,OPTIONS',
+  headers: 'Origin,X-Requested-With,Content-Type,Accept,application/json'
 };
 
 app.use(cors(corsOptions));
-console.log("Middleware added: cookie");
+console.log('Middleware added: cookie');
 
 app.use(
   session({
@@ -54,28 +56,28 @@ app.use(
     resave: false
   })
 );
-console.log("Middleware added: express-session");
+console.log('Middleware added: express-session');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-console.log("Middleware added: body-parser");
+console.log('Middleware added: body-parser');
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req, res }) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-    const { data, success } = await authMiddleware(req);
-    if (success) {
-      return { user: data };
-    } else {
-      throw new Error(data);
-    }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // const { data, success } = await authMiddleware(req);
+    // if (success) {
+    //   return { user: data };
+    // } else {
+    //   throw new Error(data);
+    // }
   }
 });
 
 server.applyMiddleware({ app });
 
 app.listen({ port }, () =>
-  console.log("🚀 Server ready at", `http://localhost:${port}/graphql`)
+  console.log('🚀 Server ready at', `http://localhost:${port}/graphql`)
 );
